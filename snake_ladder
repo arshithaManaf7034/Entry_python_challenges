@@ -1,112 +1,124 @@
 import random
+import os
+import time
+
+# ANSI color codes
+RESET = "\033[0m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
 
 class SnakeAndLadder:
     def __init__(self):
         self.snakes = {
-            99: 54,
-            70: 55,
-            52: 42,
-            25: 2,
-            95: 72
+            99: 54, 70: 55, 52: 42, 25: 2, 95: 72
+        }
+        self.ladders = {
+            6: 25, 11: 40, 60: 85, 46: 90, 17: 69
         }
 
-        self.ladders = {
-            6: 25,
-            11: 40,
-            60: 85,
-            46: 90,
-            17: 69
-        }
+        self.player1 = input("Enter Player 1 name: ") or "Player 1"
+        self.player2 = input("Enter Player 2 name: ") or "Player 2"
 
         self.positions = {
-            "P1": 0,
-            "P2": 0
+            self.player1: 0,
+            self.player2: 0
         }
 
-        self.players = ["P1", "P2"]
+        self.players = [self.player1, self.player2]
         self.turn = 0
 
+    def clear_screen(self):
+        os.system("clear" if os.name == "posix" else "cls")
+
     def roll_dice(self):
+        print("🎲 Rolling dice", end="")
+        for _ in range(3):
+            time.sleep(0.4)
+            print(".", end="", flush=True)
+        print()
         return random.randint(1, 6)
 
     def move_player(self, player, dice):
         if self.positions[player] + dice > 100:
-            print(f"⚠️ {player} move exceeds 100. Try again.")
+            print("⚠️ Move exceeds 100. Turn skipped.")
             return
 
         self.positions[player] += dice
-        print(f"➡️ {player} moved to {self.positions[player]}")
+        print(f"{CYAN}{player}{RESET} moved to {self.positions[player]}")
 
         if self.positions[player] in self.snakes:
-            print(f"🐍 {player} hit a snake! Down to {self.snakes[self.positions[player]]}")
+            print(f"{RED}🐍 Snake bite!{RESET}")
             self.positions[player] = self.snakes[self.positions[player]]
 
         elif self.positions[player] in self.ladders:
-            print(f"🪜 {player} climbed a ladder! Up to {self.ladders[self.positions[player]]}")
+            print(f"{YELLOW}🪜 Ladder climb!{RESET}")
             self.positions[player] = self.ladders[self.positions[player]]
 
     def display_board(self):
-        print("\n📋 Board View (P1, P2, S=Snake, L=Ladder)\n")
-
+        print("\n📋 Board View\n")
         num = 100
-        board = []
 
         for row in range(10):
-            current_row = []
+            row_cells = []
             for col in range(10):
+                cell = f"{num:3d}"
 
-                cell = f"{num:2d}"
-
-                if num == self.positions["P1"] and num == self.positions["P2"]:
-                    cell = "B "
-                elif num == self.positions["P1"]:
-                    cell = "P1"
-                elif num == self.positions["P2"]:
-                    cell = "P2"
+                if num == self.positions[self.player1] == self.positions[self.player2]:
+                    cell = f"{GREEN}BOTH{RESET}"
+                elif num == self.positions[self.player1]:
+                    cell = f"{GREEN} P1 {RESET}"
+                elif num == self.positions[self.player2]:
+                    cell = f"{BLUE} P2 {RESET}"
                 elif num in self.snakes:
-                    cell = " S"
+                    cell = f"{RED} S  {RESET}"
                 elif num in self.ladders:
-                    cell = " L"
+                    cell = f"{YELLOW} L  {RESET}"
 
-                current_row.append(cell)
+                row_cells.append(cell)
                 num -= 1
 
             if row % 2 != 0:
-                current_row.reverse()
+                row_cells.reverse()
 
-            board.append(current_row)
-
-        for row in board:
-            print(" ".join(row))
-
+            print(" ".join(row_cells))
         print()
 
     def play(self):
-        print("🎲 Two-Player Snake & Ladder Game")
-        print("Reach position 100 to win.")
+        self.clear_screen()
+        print("🎲 Snake & Ladder Game")
+        print("First to reach 100 wins!")
         print("Type 'exit' anytime to quit.\n")
+
+        self.display_board()
 
         while True:
             player = self.players[self.turn % 2]
-            choice = input(f"{player}'s turn – Press Enter to roll or type 'exit': ").lower()
+            choice = input(f"{player}, press Enter to roll or type 'exit': ").lower()
 
             if choice == "exit":
                 print("\n👋 Game exited. Thanks for playing!")
                 break
 
+            self.clear_screen()
             dice = self.roll_dice()
-            print(f"🎲 {player} rolled: {dice}")
+            print(f"{player} rolled a {dice}")
 
             self.move_player(player, dice)
             self.display_board()
 
             if self.positions[player] == 100:
-                print(f"🏆 {player} wins the game!")
+                print(f"🏆 {GREEN}{player} WINS THE GAME!{RESET}")
                 break
 
             self.turn += 1
 
 
-# Start the game
-game = SnakeAndLadder()
-game.play()
+# Run game safely
+try:
+    game = SnakeAndLadder()
+    game.play()
+except KeyboardInterrupt:
+    print("\n\n👋 Game interrupted. Thanks for playing!")
