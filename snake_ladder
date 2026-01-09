@@ -1,0 +1,112 @@
+import random
+
+class SnakeAndLadder:
+    def __init__(self):
+        self.snakes = {
+            99: 54,
+            70: 55,
+            52: 42,
+            25: 2,
+            95: 72
+        }
+
+        self.ladders = {
+            6: 25,
+            11: 40,
+            60: 85,
+            46: 90,
+            17: 69
+        }
+
+        self.positions = {
+            "P1": 0,
+            "P2": 0
+        }
+
+        self.players = ["P1", "P2"]
+        self.turn = 0
+
+    def roll_dice(self):
+        return random.randint(1, 6)
+
+    def move_player(self, player, dice):
+        if self.positions[player] + dice > 100:
+            print(f"⚠️ {player} move exceeds 100. Try again.")
+            return
+
+        self.positions[player] += dice
+        print(f"➡️ {player} moved to {self.positions[player]}")
+
+        if self.positions[player] in self.snakes:
+            print(f"🐍 {player} hit a snake! Down to {self.snakes[self.positions[player]]}")
+            self.positions[player] = self.snakes[self.positions[player]]
+
+        elif self.positions[player] in self.ladders:
+            print(f"🪜 {player} climbed a ladder! Up to {self.ladders[self.positions[player]]}")
+            self.positions[player] = self.ladders[self.positions[player]]
+
+    def display_board(self):
+        print("\n📋 Board View (P1, P2, S=Snake, L=Ladder)\n")
+
+        num = 100
+        board = []
+
+        for row in range(10):
+            current_row = []
+            for col in range(10):
+
+                cell = f"{num:2d}"
+
+                if num == self.positions["P1"] and num == self.positions["P2"]:
+                    cell = "B "
+                elif num == self.positions["P1"]:
+                    cell = "P1"
+                elif num == self.positions["P2"]:
+                    cell = "P2"
+                elif num in self.snakes:
+                    cell = " S"
+                elif num in self.ladders:
+                    cell = " L"
+
+                current_row.append(cell)
+                num -= 1
+
+            if row % 2 != 0:
+                current_row.reverse()
+
+            board.append(current_row)
+
+        for row in board:
+            print(" ".join(row))
+
+        print()
+
+    def play(self):
+        print("🎲 Two-Player Snake & Ladder Game")
+        print("Reach position 100 to win.")
+        print("Type 'exit' anytime to quit.\n")
+
+        while True:
+            player = self.players[self.turn % 2]
+            choice = input(f"{player}'s turn – Press Enter to roll or type 'exit': ").lower()
+
+            if choice == "exit":
+                print("\n👋 Game exited. Thanks for playing!")
+                break
+
+            dice = self.roll_dice()
+            print(f"🎲 {player} rolled: {dice}")
+
+            self.move_player(player, dice)
+            self.display_board()
+
+            if self.positions[player] == 100:
+                print(f"🏆 {player} wins the game!")
+                break
+
+            self.turn += 1
+
+
+# Start the game
+game = SnakeAndLadder()
+game.play()
